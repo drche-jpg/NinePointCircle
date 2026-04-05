@@ -7,21 +7,22 @@ st.set_page_config(layout="wide", page_title="Euler Line & 9-Point Circle")
 st.title("Interactive Demonstration: Euler Line & Nine-Point Circle")
 st.write("ลากจุดยอด (Drag the vertices) A, B, C เพื่อดูการเปลี่ยนแปลงแบบเรียลไทม์ (to see real-time changes).")
 
-# --- โค้ด HTML/JS สำหรับการโต้ตอบ + ระบบ Zoom/Pan + Metrics + Watermark ---
+# --- โค้ด HTML/JS สำหรับการโต้ตอบ + ระบบ Zoom/Pan + Watermark (Metrics อยู่ด้านล่าง) ---
 html_code = """
 <!DOCTYPE html>
 <html>
 <head>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; background-color: white;}
-        .controls-container { display: flex; flex-wrap: wrap; gap: 15px; margin: 10px 0 10px 0; justify-content: center; width: 100%; max-width: 950px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;}
+        .controls-container { display: flex; flex-wrap: wrap; gap: 15px; margin: 10px 0 15px 0; justify-content: center; width: 100%; max-width: 950px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;}
         .control-group { display: flex; flex-direction: column; gap: 8px; min-width: 220px;}
+        
+        canvas { border: 1px solid #ccc; border-radius: 8px; background-color: #ffffff; cursor: crosshair; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px;}
         
         .metrics-container { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 10px; width: 100%; max-width: 950px; margin-bottom: 15px; padding: 15px; background: #e9ecef; border-radius: 8px; border: 1px solid #ced4da; color: #212529;}
         .metric-col { display: flex; flex-direction: column; gap: 6px; font-size: 15px; font-family: 'Courier New', Courier, monospace;}
         .metric-title { font-family: 'Segoe UI', sans-serif; font-weight: bold; border-bottom: 1px solid #adb5bd; padding-bottom: 4px; margin-bottom: 4px; color: #495057;}
         
-        canvas { border: 1px solid #ccc; border-radius: 8px; background-color: #ffffff; cursor: crosshair; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
         .label { cursor: pointer; user-select: none; font-size: 13px; color: #333;}
         h4 { margin: 0 0 8px 0; font-size: 14px; color: #111; border-bottom: 2px solid #ddd; padding-bottom: 4px;}
         input[type="checkbox"] { margin-right: 6px; cursor: pointer;}
@@ -62,10 +63,10 @@ html_code = """
         </div>
     </div>
 
+    <canvas id="canvas" width="900" height="550"></canvas>
+
     <div class="metrics-container" id="metricsPanel">
         </div>
-    
-    <canvas id="canvas" width="900" height="550"></canvas>
 
     <script>
         const canvas = document.getElementById('canvas');
@@ -346,5 +347,5 @@ html_code = """
 </html>
 """
 
-# เพิ่มความสูงของ iframe ใน Streamlit เพื่อรองรับระบบเมนูและ UI ใหม่ทั้งหมด
+# แสดงหน้าจอ
 components.html(html_code, height=950)
