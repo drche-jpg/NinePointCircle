@@ -17,7 +17,7 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 st.title("Interactive Demonstration: Euler Line & Nine-Point Circle")
 st.write("เอกสารประกอบการเรียนรู้ เรขาคณิตแบบโต้ตอบ (Interactive Geometry Demo)")
 
-# --- โค้ด HTML/JS สำหรับการโต้ตอบ + Zoom/Pan + Description + Metrics + Watermark ---
+# --- โค้ด HTML/JS สำหรับการโต้ตอบ + Zoom/Pan + Description (เพิ่มคำอธิบายจุดออยเลอร์) + Metrics + Watermark ---
 html_code = """
 <!DOCTYPE html>
 <html>
@@ -30,7 +30,7 @@ html_code = """
         .info-container h3 { margin: 0 0 8px 0; color: #0056b3; font-size: 18px; display: flex; align-items: center; gap: 8px;}
         .info-container p { margin: 5px 0; line-height: 1.5;}
         .info-container ul { margin: 5px 0 0 0; padding-left: 25px;}
-        .info-container li { margin-bottom: 4px;}
+        .info-container li { margin-bottom: 6px; line-height: 1.4;}
 
         /* แผงควบคุม (Controls) */
         .controls-container { display: flex; flex-wrap: wrap; gap: 15px; margin: 0 0 15px 0; justify-content: center; width: 100%; max-width: 950px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6; box-sizing: border-box;}
@@ -60,6 +60,7 @@ html_code = """
         <ul>
             <li><strong>เส้นออยเลอร์ (Euler Line):</strong> ไม่ว่าสามเหลี่ยมจะเปลี่ยนรูปไปอย่างไร จุดศูนย์กลางวงกลมล้อมรอบ (O), เซนทรอยด์ (G), และจุดออร์โทเซนเตอร์ (H) จะเรียงตัวเป็นเส้นตรงเดียวกันเสมอ</li>
             <li><strong>วงกลมเก้าจุด (9-Point Circle):</strong> วงกลมที่จุดศูนย์กลาง (N) อยู่บนเส้นออยเลอร์ และจะลากผ่านจุดสำคัญ 9 จุดพอดี ได้แก่: จุดกึ่งกลางด้าน (3), จุดโคนเส้นส่วนสูง (3), และจุดออยเลอร์ (3)</li>
+            <li><strong>จุดออยเลอร์ (Euler Points):</strong> คือ <strong>"จุดกึ่งกลาง"</strong> ของเส้นตรงที่ลากเชื่อมระหว่าง <strong>จุดออร์โทเซนเตอร์ (H)</strong> ไปยัง <strong>จุดยอดทั้งสาม (A, B, C)</strong></li>
         </ul>
     </div>
 
@@ -377,5 +378,5 @@ html_code = """
 </html>
 """
 
-# เพิ่มความสูงขึ้นเป็น 1250 และใส่ scrolling=True เพื่อรองรับกล่องคำอธิบายใหม่ ให้แน่ใจว่าไม่ตกขอบ
+# ใช้ความสูงที่เพียงพอ (1250) และเปิดใช้งาน scrolling
 components.html(html_code, height=1250, scrolling=True)
