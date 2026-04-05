@@ -348,4 +348,5 @@ html_code = """
 """
 
 # แสดงหน้าจอ
-components.html(html_code, height=950)
+# โค้ดที่แก้ไขแล้ว
+components.html(html_code, height=1150, scrolling=True)
