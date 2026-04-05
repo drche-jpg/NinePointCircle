@@ -1,6 +1,10 @@
 import streamlit as st
 import streamlit.components.v1 as components
-# โค้ดสำหรับซ่อนเมนู มุมขวาบน และ Footer ของ Streamlit
+
+# ตั้งค่าหน้าเว็บ / Set page configuration
+st.set_page_config(layout="wide", page_title="Euler Line & 9-Point Circle")
+
+# โค้ดสำหรับซ่อนเมนู มุมขวาบน และ Footer ของ Streamlit (ป้องกันคนกดดูโค้ด)
 hide_streamlit_style = """
             <style>
             #MainMenu {visibility: hidden;}
@@ -10,25 +14,32 @@ hide_streamlit_style = """
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-# ตั้งค่าหน้าเว็บ / Set page configuration
-st.set_page_config(layout="wide", page_title="Euler Line & 9-Point Circle")
-
 st.title("Interactive Demonstration: Euler Line & Nine-Point Circle")
-st.write("ลากจุดยอด (Drag the vertices) A, B, C เพื่อดูการเปลี่ยนแปลงแบบเรียลไทม์ (to see real-time changes).")
+st.write("เอกสารประกอบการเรียนรู้ เรขาคณิตแบบโต้ตอบ (Interactive Geometry Demo)")
 
-# --- โค้ด HTML/JS สำหรับการโต้ตอบ + ระบบ Zoom/Pan + Watermark (Metrics อยู่ด้านล่าง) ---
+# --- โค้ด HTML/JS สำหรับการโต้ตอบ + Zoom/Pan + Description + Metrics + Watermark ---
 html_code = """
 <!DOCTYPE html>
 <html>
 <head>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; background-color: white;}
-        .controls-container { display: flex; flex-wrap: wrap; gap: 15px; margin: 10px 0 15px 0; justify-content: center; width: 100%; max-width: 950px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;}
-        .control-group { display: flex; flex-direction: column; gap: 8px; min-width: 220px;}
+        
+        /* กล่องคำอธิบาย (Description Box) */
+        .info-container { width: 100%; max-width: 950px; background: #e3f2fd; border-left: 5px solid #0d6efd; padding: 15px 20px; margin: 10px 0 15px 0; border-radius: 4px; color: #333; font-size: 14.5px; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .info-container h3 { margin: 0 0 8px 0; color: #0056b3; font-size: 18px; display: flex; align-items: center; gap: 8px;}
+        .info-container p { margin: 5px 0; line-height: 1.5;}
+        .info-container ul { margin: 5px 0 0 0; padding-left: 25px;}
+        .info-container li { margin-bottom: 4px;}
+
+        /* แผงควบคุม (Controls) */
+        .controls-container { display: flex; flex-wrap: wrap; gap: 15px; margin: 0 0 15px 0; justify-content: center; width: 100%; max-width: 950px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6; box-sizing: border-box;}
+        .control-group { display: flex; flex-direction: column; gap: 8px; min-width: 210px;}
         
         canvas { border: 1px solid #ccc; border-radius: 8px; background-color: #ffffff; cursor: crosshair; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px;}
         
-        .metrics-container { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 10px; width: 100%; max-width: 950px; margin-bottom: 15px; padding: 15px; background: #e9ecef; border-radius: 8px; border: 1px solid #ced4da; color: #212529;}
+        /* แผงตัวเลข (Metrics) */
+        .metrics-container { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 10px; width: 100%; max-width: 950px; margin-bottom: 15px; padding: 15px; background: #e9ecef; border-radius: 8px; border: 1px solid #ced4da; color: #212529; box-sizing: border-box;}
         .metric-col { display: flex; flex-direction: column; gap: 6px; font-size: 15px; font-family: 'Courier New', Courier, monospace;}
         .metric-title { font-family: 'Segoe UI', sans-serif; font-weight: bold; border-bottom: 1px solid #adb5bd; padding-bottom: 4px; margin-bottom: 4px; color: #495057;}
         
@@ -42,12 +53,22 @@ html_code = """
     </style>
 </head>
 <body>
+
+    <div class="info-container">
+        <h3>💡 คำแนะนำ & ทฤษฎีบท (Instructions & Concepts)</h3>
+        <p><strong>การใช้งาน (How to use):</strong> ใช้เมาส์คลิกค้างที่จุดยอด <strong>A, B, หรือ C</strong> แล้วลากเพื่อเปลี่ยนรูปทรงของสามเหลี่ยมอย่างอิสระ (Drag vertices to change the triangle shape). ลองเปิด-ปิดตัวเลือกด้านล่างเพื่อสังเกตการสร้างเส้นและจุดตัดต่างๆ</p>
+        <ul>
+            <li><strong>เส้นออยเลอร์ (Euler Line):</strong> ไม่ว่าสามเหลี่ยมจะเปลี่ยนรูปไปอย่างไร จุดศูนย์กลางวงกลมล้อมรอบ (O), เซนทรอยด์ (G), และจุดออร์โทเซนเตอร์ (H) จะเรียงตัวเป็นเส้นตรงเดียวกันเสมอ</li>
+            <li><strong>วงกลมเก้าจุด (9-Point Circle):</strong> วงกลมที่จุดศูนย์กลาง (N) อยู่บนเส้นออยเลอร์ และจะลากผ่านจุดสำคัญ 9 จุดพอดี ได้แก่: จุดกึ่งกลางด้าน (3), จุดโคนเส้นส่วนสูง (3), และจุดออยเลอร์ (3)</li>
+        </ul>
+    </div>
+
     <div class="controls-container">
         <div class="control-group zoom-controls">
             <h4>🔍 มุมมอง / View Control</h4>
             <label class="label">ซูม (Zoom): <input type="range" id="zoomSlider" min="0.1" max="4" step="0.05" value="1" oninput="updateZoomFromSlider()"></label>
-            <span style="font-size: 11px; color: #555;">* เลื่อนล้อเมาส์เพื่อซูมได้ (Scroll to zoom)</span>
-            <span style="font-size: 11px; color: #555;">* คลิกพื้นหลังค้างเพื่อลากหน้าจอ (Drag background to pan)</span>
+            <span style="font-size: 11px; color: #555;">* เลื่อนล้อเมาส์เพื่อซูม (Scroll to zoom)</span>
+            <span style="font-size: 11px; color: #555;">* คลิกพื้นหลังค้างลากหน้าจอ (Drag to pan)</span>
             <button class="reset-btn" onclick="resetView()">รีเซ็ตมุมมอง / Reset View</button>
         </div>
         <div class="control-group">
@@ -72,7 +93,7 @@ html_code = """
         </div>
     </div>
 
-    <canvas id="canvas" width="900" height="550"></canvas>
+    <canvas id="canvas" width="950" height="550"></canvas>
 
     <div class="metrics-container" id="metricsPanel">
         </div>
@@ -82,7 +103,7 @@ html_code = """
         const ctx = canvas.getContext('2d');
         const metricsPanel = document.getElementById('metricsPanel');
         
-        let pts = [{x: 450, y: 150, label: 'A'}, {x: 250, y: 400, label: 'B'}, {x: 650, y: 400, label: 'C'}];
+        let pts = [{x: 475, y: 150, label: 'A'}, {x: 275, y: 400, label: 'B'}, {x: 675, y: 400, label: 'C'}];
         
         // สถานะสำหรับการลาก (Drag) และ ซูม (Pan/Zoom)
         let dragging = null;
@@ -356,6 +377,5 @@ html_code = """
 </html>
 """
 
-# แสดงหน้าจอ
-# โค้ดที่แก้ไขแล้ว
-components.html(html_code, height=1150, scrolling=True)
+# เพิ่มความสูงขึ้นเป็น 1250 และใส่ scrolling=True เพื่อรองรับกล่องคำอธิบายใหม่ ให้แน่ใจว่าไม่ตกขอบ
+components.html(html_code, height=1250, scrolling=True)
