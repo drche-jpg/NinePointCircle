@@ -57,19 +57,19 @@ html_code = """
         <h3>📚 คำนิยาม & คุณสมบัติ (Definitions & Properties)</h3>
         <ul>
             <li><strong>จุดศูนย์กลางวงกลมเก้าจุด (Nine-Point Center - N):</strong> 
-                คือจุดกึ่งกลางของเส้นตรงที่เชื่อมระหว่างจุด Orthocenter (H) และ Circumcenter (O) [cite: 161] โดยจะมีระยะห่าง <span class="highlight">HN = NO</span> เสมอ
+                คือจุดกึ่งกลางของเส้นตรงที่เชื่อมระหว่างจุด Orthocenter (H) และ Circumcenter (O) โดยจะมีระยะห่าง <span class="highlight">HN = NO</span> เสมอ
                 <span class="en-text">The midpoint of the segment connecting the Orthocenter (H) and Circumcenter (O).</span>
             </li>
             <li><strong>เส้นออยเลอร์ (Euler Line):</strong> 
-                เส้นตรงที่ลากผ่านจุด O, G, และ H ในสามเหลี่ยมที่ไม่ใช่สามเหลี่ยมด้านเท่า [cite: 14, 160] โดยมีความสัมพันธ์คือ <span class="highlight">HG = 2GO</span> และจุด N จะอยู่บนเส้นนี้ด้วย [cite: 23, 161]
+                เส้นตรงที่ลากผ่านจุด O, G, และ H ในสามเหลี่ยมที่ไม่ใช่สามเหลี่ยมด้านเท่า  โดยมีความสัมพันธ์คือ <span class="highlight">HG = 2GO</span> และจุด N จะอยู่บนเส้นนี้ด้วย 
                 <span class="en-text">The unique line passing through O, G, and H. The center N also lies on this line.</span>
             </li>
             <li><strong>รัศมีวงกลม (Radius):</strong> 
-                รัศมีของวงกลมเก้าจุด (Rn) จะมีขนาดเป็น <strong>ครึ่งหนึ่ง</strong> ของรัศมีวงกลมล้อมรอบ (R) เสมอ [cite: 113, 115, 120] (<span class="highlight">Rn = R / 2</span>)
+                รัศมีของวงกลมเก้าจุด (Rn) จะมีขนาดเป็น <strong>ครึ่งหนึ่ง</strong> ของรัศมีวงกลมล้อมรอบ (R) เสมอ  (<span class="highlight">Rn = R / 2</span>)
                 <span class="en-text">The nine-point radius is always exactly half of the circumradius.</span>
             </li>
             <li><strong>จุดออยเลอร์ (Euler Points):</strong> 
-                จุดกึ่งกลางของส่วนเส้นตรงที่เชื่อมระหว่างจุด Orthocenter (H) ไปยังจุดยอดทั้งสาม (A, B, C) [cite: 75, 76, 124, 127]
+                จุดกึ่งกลางของส่วนเส้นตรงที่เชื่อมระหว่างจุด Orthocenter (H) ไปยังจุดยอดทั้งสาม (A, B, C) 
                 <span class="en-text">The midpoints of the segments connecting H to each vertex.</span>
             </li>
         </ul>
