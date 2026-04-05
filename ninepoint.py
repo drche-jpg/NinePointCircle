@@ -17,14 +17,13 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 st.title("Interactive Demonstration: Euler Line & Nine-Point Circle")
 st.write("เอกสารประกอบการเรียนรู้ เรขาคณิตแบบโต้ตอบ (Interactive Geometry Demo)")
 
-# --- โค้ด HTML/JS สำหรับการโต้ตอบ + รองรับจอมือถือ (Touch) + Zoom/Pan + Description + Metrics + Watermark ---
+# --- โค้ด HTML/JS สำหรับการโต้ตอบ + Zoom/Pan + Description (เพิ่มคำอธิบายจุดออยเลอร์) + Metrics + Watermark ---
 html_code = """
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; background-color: white; touch-action: pan-y; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; background-color: white;}
         
         /* กล่องคำอธิบาย (Description Box) */
         .info-container { width: 100%; max-width: 950px; background: #e3f2fd; border-left: 5px solid #0d6efd; padding: 15px 20px; margin: 10px 0 15px 0; border-radius: 4px; color: #333; font-size: 14.5px; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
@@ -37,7 +36,7 @@ html_code = """
         .controls-container { display: flex; flex-wrap: wrap; gap: 15px; margin: 0 0 15px 0; justify-content: center; width: 100%; max-width: 950px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6; box-sizing: border-box;}
         .control-group { display: flex; flex-direction: column; gap: 8px; min-width: 210px;}
         
-        canvas { border: 1px solid #ccc; border-radius: 8px; background-color: #ffffff; cursor: crosshair; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px; max-width: 100%; touch-action: none;}
+        canvas { border: 1px solid #ccc; border-radius: 8px; background-color: #ffffff; cursor: crosshair; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 15px;}
         
         /* แผงตัวเลข (Metrics) */
         .metrics-container { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 10px; width: 100%; max-width: 950px; margin-bottom: 15px; padding: 15px; background: #e9ecef; border-radius: 8px; border: 1px solid #ced4da; color: #212529; box-sizing: border-box;}
@@ -57,7 +56,7 @@ html_code = """
 
     <div class="info-container">
         <h3>💡 คำแนะนำ & ทฤษฎีบท (Instructions & Concepts)</h3>
-        <p><strong>การใช้งาน (How to use):</strong> ใช้เมาส์หรือ<strong>นิ้วสัมผัส</strong>ลากที่จุดยอด <strong>A, B, หรือ C</strong> เพื่อเปลี่ยนรูปทรงของสามเหลี่ยมอย่างอิสระ (Drag vertices to change the triangle shape). ลองเปิด-ปิดตัวเลือกด้านล่างเพื่อสังเกตการสร้างเส้นและจุดตัดต่างๆ</p>
+        <p><strong>การใช้งาน (How to use):</strong> ใช้เมาส์คลิกค้างที่จุดยอด <strong>A, B, หรือ C</strong> แล้วลากเพื่อเปลี่ยนรูปทรงของสามเหลี่ยมอย่างอิสระ (Drag vertices to change the triangle shape). ลองเปิด-ปิดตัวเลือกด้านล่างเพื่อสังเกตการสร้างเส้นและจุดตัดต่างๆ</p>
         <ul>
             <li><strong>เส้นออยเลอร์ (Euler Line):</strong> ไม่ว่าสามเหลี่ยมจะเปลี่ยนรูปไปอย่างไร จุดศูนย์กลางวงกลมล้อมรอบ (O), เซนทรอยด์ (G), และจุดออร์โทเซนเตอร์ (H) จะเรียงตัวเป็นเส้นตรงเดียวกันเสมอ</li>
             <li><strong>วงกลมเก้าจุด (9-Point Circle):</strong> วงกลมที่จุดศูนย์กลาง (N) อยู่บนเส้นออยเลอร์ และจะลากผ่านจุดสำคัญ 9 จุดพอดี ได้แก่: จุดกึ่งกลางด้าน (3), จุดโคนเส้นส่วนสูง (3), และจุดออยเลอร์ (3)</li>
@@ -70,7 +69,7 @@ html_code = """
             <h4>🔍 มุมมอง / View Control</h4>
             <label class="label">ซูม (Zoom): <input type="range" id="zoomSlider" min="0.1" max="4" step="0.05" value="1" oninput="updateZoomFromSlider()"></label>
             <span style="font-size: 11px; color: #555;">* เลื่อนล้อเมาส์เพื่อซูม (Scroll to zoom)</span>
-            <span style="font-size: 11px; color: #555;">* ลากที่ว่างเพื่อแพนจอ (Drag background to pan)</span>
+            <span style="font-size: 11px; color: #555;">* คลิกพื้นหลังค้างลากหน้าจอ (Drag to pan)</span>
             <button class="reset-btn" onclick="resetView()">รีเซ็ตมุมมอง / Reset View</button>
         </div>
         <div class="control-group">
@@ -107,6 +106,7 @@ html_code = """
         
         let pts = [{x: 475, y: 150, label: 'A'}, {x: 275, y: 400, label: 'B'}, {x: 675, y: 400, label: 'C'}];
         
+        // สถานะสำหรับการลาก (Drag) และ ซูม (Pan/Zoom)
         let dragging = null;
         let isPanning = false;
         let scale = 1.0;
@@ -115,65 +115,36 @@ html_code = """
         let startPanX = 0;
         let startPanY = 0;
 
-        // แปลงพิกัดหน้าจอ เป็นพิกัดโลก
+        // แปลงพิกัดหน้าจอ (Screen) เป็นพิกัดโลก (World)
         function toWorld(sx, sy) {
             return { x: (sx - offsetX) / scale, y: (sy - offsetY) / scale };
         }
 
-        // --- MOUSE EVENTS ---
+        // Mouse Events
         canvas.addEventListener('mousedown', (e) => {
             const rect = canvas.getBoundingClientRect();
             const sx = e.clientX - rect.left;
             const sy = e.clientY - rect.top;
-            handleDown(sx, sy);
-        });
-        canvas.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            handleMove(e.clientX - rect.left, e.clientY - rect.top);
-        });
-        canvas.addEventListener('mouseup', handleUp);
-        canvas.addEventListener('mouseleave', handleUp);
-
-        // --- TOUCH EVENTS (สำหรับจอมือถือ/แท็บเล็ต) ---
-        canvas.addEventListener('touchstart', (e) => {
-            if(e.touches.length === 1) {
-                const rect = canvas.getBoundingClientRect();
-                const sx = e.touches[0].clientX - rect.left;
-                const sy = e.touches[0].clientY - rect.top;
-                if(handleDown(sx, sy)) {
-                    e.preventDefault(); // ป้องกันหน้าจอเลื่อนเวลาลากจุด
-                }
-            }
-        }, {passive: false});
-
-        canvas.addEventListener('touchmove', (e) => {
-            if(dragging || isPanning) e.preventDefault(); // ป้องกันหน้าจอเลื่อน
-            if(e.touches.length === 1) {
-                const rect = canvas.getBoundingClientRect();
-                handleMove(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
-            }
-        }, {passive: false});
-        
-        canvas.addEventListener('touchend', handleUp);
-        canvas.addEventListener('touchcancel', handleUp);
-
-        // --- COMMON EVENT LOGIC ---
-        function handleDown(sx, sy) {
             const w = toWorld(sx, sy);
+            
             for (let p of pts) {
-                // ขยายพื้นที่สัมผัส (Hitbox) ให้ใหญ่ขึ้นสำหรับนิ้วมือ (40 px)
-                if (Math.hypot(p.x - w.x, p.y - w.y) < 40 / scale) { 
+                // ขยายพื้นที่การคลิกตามสเกลซูม
+                if (Math.hypot(p.x - w.x, p.y - w.y) < 20 / scale) { 
                     dragging = p; 
-                    return true; 
+                    return; 
                 }
             }
+            // ถ้าไม่ได้คลิกโดนจุด ให้เริ่มการแพนหน้าจอ
             isPanning = true;
             startPanX = sx - offsetX;
             startPanY = sy - offsetY;
-            return false;
-        }
+        });
 
-        function handleMove(sx, sy) {
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const sx = e.clientX - rect.left;
+            const sy = e.clientY - rect.top;
+            
             if (dragging) {
                 const w = toWorld(sx, sy);
                 dragging.x = w.x;
@@ -184,12 +155,10 @@ html_code = """
                 offsetY = sy - startPanY;
                 draw();
             }
-        }
+        });
 
-        function handleUp() {
-            dragging = null;
-            isPanning = false;
-        }
+        canvas.addEventListener('mouseup', () => { dragging = null; isPanning = false; });
+        canvas.addEventListener('mouseleave', () => { dragging = null; isPanning = false; });
 
         // Wheel Event สำหรับซูมผ่านลูกกลิ้งเมาส์
         canvas.addEventListener('wheel', (e) => {
@@ -199,11 +168,13 @@ html_code = """
             scale = Math.min(Math.max(0.1, scale), 4.0);
             document.getElementById('zoomSlider').value = scale;
             
+            // ทำให้ซูมเข้าหาตำแหน่งที่เมาส์ชี้อยู่
             const rect = canvas.getBoundingClientRect();
             const sx = e.clientX - rect.left;
             const sy = e.clientY - rect.top;
             offsetX = sx - (sx - offsetX) * (scale / oldScale);
             offsetY = sy - (sy - offsetY) * (scale / oldScale);
+            
             draw();
         });
 
@@ -237,6 +208,7 @@ html_code = """
             return { x: A.x - k * (C.y - B.y), y: A.y + k * (C.x - B.x) };
         }
 
+        // Helper: Draw Point (ปรับขนาดตามสเกลซูมอัตโนมัติ)
         function drawPoint(p, color, label, size=5) {
             ctx.beginPath(); ctx.arc(p.x, p.y, size/scale, 0, Math.PI*2);
             ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = "white"; ctx.lineWidth = 1/scale; ctx.stroke();
@@ -247,6 +219,7 @@ html_code = """
             }
         }
 
+        // Helper: Draw Line (ปรับขนาดตามสเกลซูมอัตโนมัติ)
         function drawLine(p1, p2, color, dash=[], width=1) {
             ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
             ctx.strokeStyle = color; ctx.lineWidth = width/scale; 
@@ -254,10 +227,11 @@ html_code = """
             ctx.stroke(); ctx.setLineDash([]);
         }
 
+        // Main Draw
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // --- DRAW WATERMARK ---
+            // --- DRAW WATERMARK (ตรึงติดหน้าจอ ไม่โดนซูม) ---
             ctx.save();
             ctx.globalAlpha = 0.08;
             ctx.font = "bold 45px Arial";
@@ -312,7 +286,97 @@ html_code = """
                 </div>
             `;
 
+            // เตรียม 9 จุด
             const M_BC = {x: (B.x + C.x)/2, y: (B.y + C.y)/2};
             const M_AC = {x: (A.x + C.x)/2, y: (A.y + C.y)/2};
             const M_AB = {x: (A.x + B.x)/2, y: (A.y + B.y)/2};
-            const F_A = getAltitude
+            const F_A = getAltitudeFoot(A, B, C);
+            const F_B = getAltitudeFoot(B, A, C);
+            const F_C = getAltitudeFoot(C, A, B);
+            const E_A = {x: (A.x + H.x)/2, y: (A.y + H.y)/2};
+            const E_B = {x: (B.x + H.x)/2, y: (B.y + H.y)/2};
+            const E_C = {x: (C.x + H.x)/2, y: (C.y + H.y)/2};
+
+            // --- เริ่มโหมดซูมและแพน ---
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(scale, scale);
+
+            // วาดเส้นโครงสร้าง
+            if (document.getElementById('showMed').checked) {
+                drawLine(A, M_BC, "rgba(0,128,0,0.4)"); drawLine(B, M_AC, "rgba(0,128,0,0.4)"); drawLine(C, M_AB, "rgba(0,128,0,0.4)");
+            }
+            if (document.getElementById('showAlt').checked) {
+                drawLine(A, F_A, "rgba(255,0,0,0.4)"); drawLine(B, F_B, "rgba(255,0,0,0.4)"); drawLine(C, F_C, "rgba(255,0,0,0.4)");
+            }
+            if (document.getElementById('showPerp').checked) {
+                drawLine(M_BC, O, "rgba(0,0,255,0.4)"); drawLine(M_AC, O, "rgba(0,0,255,0.4)"); drawLine(M_AB, O, "rgba(0,0,255,0.4)");
+            }
+
+            // วาดสามเหลี่ยม
+            ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.lineTo(C.x, C.y); ctx.closePath();
+            ctx.strokeStyle = "#000"; ctx.lineWidth = 2/scale; ctx.stroke();
+
+            // วาดวงกลม
+            if (document.getElementById('showCircum').checked) {
+                ctx.beginPath(); ctx.arc(O.x, O.y, R, 0, Math.PI*2);
+                ctx.strokeStyle = "rgba(0, 0, 255, 0.4)"; ctx.lineWidth = 1.5/scale; ctx.setLineDash([5/scale, 5/scale]); ctx.stroke(); ctx.setLineDash([]);
+            }
+            if (document.getElementById('showNineCirc').checked) {
+                ctx.beginPath(); ctx.arc(N.x, N.y, Rn, 0, Math.PI*2);
+                ctx.strokeStyle = "rgba(128, 0, 128, 0.8)"; ctx.lineWidth = 2.5/scale; ctx.stroke();
+            }
+
+            // วาดเส้นออยเลอร์
+            if (document.getElementById('showEuler').checked) {
+                let dx = H.x - O.x, dy = H.y - O.y;
+                drawLine({x: O.x - dx*1.5, y: O.y - dy*1.5}, {x: H.x + dx*1.5, y: H.y + dy*1.5}, "rgba(255, 165, 0, 0.7)", [], 3);
+            }
+
+            // วาด 9 จุด
+            if (document.getElementById('showMid').checked) {
+                drawPoint(M_BC, "green", "", 6); drawPoint(M_AC, "green", "", 6); drawPoint(M_AB, "green", "", 6);
+            }
+            if (document.getElementById('showFeet').checked) {
+                drawPoint(F_A, "orange", "", 6); drawPoint(F_B, "orange", "", 6); drawPoint(F_C, "orange", "", 6);
+            }
+            if (document.getElementById('showEulerPts').checked) {
+                if (document.getElementById('showH').checked) {
+                    drawLine(A, H, "rgba(0,0,255,0.2)", [3,3]); drawLine(B, H, "rgba(0,0,255,0.2)", [3,3]); drawLine(C, H, "rgba(0,0,255,0.2)", [3,3]);
+                }
+                drawPoint(E_A, "#00cccc", "", 6); drawPoint(E_B, "#00cccc", "", 6); drawPoint(E_C, "#00cccc", "", 6);
+            }
+
+            // วาดจุดศูนย์กลาง
+            if (document.getElementById('showCircum').checked) drawPoint(O, "blue", "O");
+            if (document.getElementById('showG').checked) drawPoint(G, "green", "G");
+            if (document.getElementById('showH').checked) drawPoint(H, "red", "H", 6);
+            if (document.getElementById('showNineCirc').checked) drawPoint(N, "purple", "N");
+
+            // วาดจุดยอด (A, B, C)
+            for (let p of pts) {
+                ctx.beginPath(); ctx.arc(p.x, p.y, 9/scale, 0, Math.PI*2);
+                ctx.fillStyle = dragging === p ? "#ffcc00" : "#333"; ctx.fill();
+                ctx.fillStyle = "black"; ctx.font = "bold " + Math.max(12, 16/scale) + "px Arial"; 
+                ctx.fillText(p.label, p.x - 6/scale, p.y - 13/scale);
+            }
+
+            ctx.restore(); // สิ้นสุดโหมดซูม
+
+            // --- DRAW COPYRIGHT (ตรึงติดหน้าจอ) ---
+            ctx.save();
+            ctx.fillStyle = "#888";
+            ctx.font = "12px Arial";
+            ctx.textAlign = "right";
+            ctx.fillText("© 2026 by Dr.Che @ Math Mission Thailand. All rights reserved.", canvas.width - 15, canvas.height - 15);
+            ctx.restore();
+        }
+        
+        draw(); // Initial Render
+    </script>
+</body>
+</html>
+"""
+
+# ใช้ความสูงที่เพียงพอ (1250) และเปิดใช้งาน scrolling
+components.html(html_code, height=1250, scrolling=True)
