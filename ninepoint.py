@@ -15,7 +15,6 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 st.title("Interactive Demonstration: Euler Line & Nine-Point Circle")
-st.write("เอกสารประกอบการเรียนรู้ เรขาคณิตแบบโต้ตอบ (Interactive Geometry Demo)")
 
 # --- โค้ด HTML/JS สำหรับการโต้ตอบ + รองรับจอมือถือ + Zoom/Pan + คำอธิบายสองภาษา + Metrics + Watermark ---
 html_code = """
