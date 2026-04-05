@@ -17,7 +17,7 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 st.title("Interactive Demonstration: Euler Line & Nine-Point Circle")
 st.write("เอกสารประกอบการเรียนรู้ เรขาคณิตแบบโต้ตอบ (Interactive Geometry Demo)")
 
-# --- โค้ด HTML/JS สำหรับการโต้ตอบ + รองรับจอมือถือ (Touch) + Zoom/Pan + Description + Metrics + Watermark ---
+# --- โค้ด HTML/JS สำหรับการโต้ตอบ + รองรับจอมือถือ + Zoom/Pan + คำอธิบายสองภาษา + Metrics + Watermark ---
 html_code = """
 <!DOCTYPE html>
 <html>
@@ -31,7 +31,8 @@ html_code = """
         .info-container h3 { margin: 0 0 8px 0; color: #0056b3; font-size: 18px; display: flex; align-items: center; gap: 8px;}
         .info-container p { margin: 5px 0; line-height: 1.5;}
         .info-container ul { margin: 5px 0 0 0; padding-left: 25px;}
-        .info-container li { margin-bottom: 6px; line-height: 1.4;}
+        .info-container li { margin-bottom: 8px; line-height: 1.5;}
+        .en-text { color: #555; font-size: 13.5px; display: block; font-style: italic; margin-top: 2px;}
 
         /* แผงควบคุม (Controls) */
         .controls-container { display: flex; flex-wrap: wrap; gap: 15px; margin: 0 0 15px 0; justify-content: center; width: 100%; max-width: 950px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6; box-sizing: border-box;}
@@ -57,11 +58,17 @@ html_code = """
 
     <div class="info-container">
         <h3>💡 คำแนะนำ & ทฤษฎีบท (Instructions & Concepts)</h3>
-        <p><strong>การใช้งาน (How to use):</strong> ใช้เมาส์หรือ<strong>นิ้วสัมผัส</strong>ลากที่จุดยอด <strong>A, B, หรือ C</strong> เพื่อเปลี่ยนรูปทรงของสามเหลี่ยมอย่างอิสระ (Drag vertices to change the triangle shape). ลองเปิด-ปิดตัวเลือกด้านล่างเพื่อสังเกตการสร้างเส้นและจุดตัดต่างๆ</p>
+        <p><strong>การใช้งาน (How to use):</strong> ใช้เมาส์หรือนิ้วสัมผัสลากที่จุดยอด <strong>A, B, หรือ C</strong> เพื่อเปลี่ยนรูปทรงของสามเหลี่ยมอย่างอิสระ ลองเปิด-ปิดตัวเลือกด้านล่างเพื่อสังเกตการสร้างเส้นและจุดตัดต่างๆ 
+        <span class="en-text">Use your mouse or touch to drag vertices A, B, or C to freely change the triangle's shape. Toggle the options below to observe how lines and intersection points are constructed.</span></p>
         <ul>
-            <li><strong>เส้นออยเลอร์ (Euler Line):</strong> ไม่ว่าสามเหลี่ยมจะเปลี่ยนรูปไปอย่างไร จุดศูนย์กลางวงกลมล้อมรอบ (O), เซนทรอยด์ (G), และจุดออร์โทเซนเตอร์ (H) จะเรียงตัวเป็นเส้นตรงเดียวกันเสมอ</li>
-            <li><strong>วงกลมเก้าจุด (9-Point Circle):</strong> วงกลมที่จุดศูนย์กลาง (N) อยู่บนเส้นออยเลอร์ และจะลากผ่านจุดสำคัญ 9 จุดพอดี ได้แก่: จุดกึ่งกลางด้าน (3), จุดโคนเส้นส่วนสูง (3), และจุดออยเลอร์ (3)</li>
-            <li><strong>จุดออยเลอร์ (Euler Points):</strong> คือ <strong>"จุดกึ่งกลาง"</strong> ของเส้นตรงที่ลากเชื่อมระหว่าง <strong>จุดออร์โทเซนเตอร์ (H)</strong> ไปยัง <strong>จุดยอดทั้งสาม (A, B, C)</strong></li>
+            <li><strong>เส้นออยเลอร์ (Euler Line):</strong> ไม่ว่าสามเหลี่ยมจะเปลี่ยนรูปไปอย่างไร จุดศูนย์กลางวงกลมล้อมรอบ (O), เซนทรอยด์ (G), และจุดออร์โทเซนเตอร์ (H) จะเรียงตัวเป็นเส้นตรงเดียวกันเสมอ
+            <span class="en-text">No matter how the triangle changes, the Circumcenter (O), Centroid (G), and Orthocenter (H) will always align on a single straight line.</span></li>
+            
+            <li><strong>วงกลมเก้าจุด (9-Point Circle):</strong> วงกลมที่มีจุดศูนย์กลาง (N) อยู่บนเส้นออยเลอร์ และจะลากผ่านจุดสำคัญ 9 จุดพอดี ได้แก่: จุดกึ่งกลางด้าน (3), จุดโคนเส้นส่วนสูง (3), และจุดออยเลอร์ (3)
+            <span class="en-text">A circle with its center (N) on the Euler line that passes through exactly 9 specific points: the 3 side midpoints, the 3 altitude feet, and the 3 Euler points.</span></li>
+            
+            <li><strong>จุดออยเลอร์ (Euler Points):</strong> คือ <strong>"จุดกึ่งกลาง"</strong> ของเส้นตรงที่ลากเชื่อมระหว่าง <strong>จุดออร์โทเซนเตอร์ (H)</strong> ไปยัง <strong>จุดยอดทั้งสาม (A, B, C)</strong>
+            <span class="en-text">These are the "midpoints" of the line segments connecting the Orthocenter (H) to each of the three vertices (A, B, C).</span></li>
         </ul>
     </div>
 
@@ -273,7 +280,7 @@ html_code = """
             const O = getCircumcenter(A, B, C);
             
             if (!O) {
-                metricsPanel.innerHTML = "<strong style='color:red;'>Vertices are collinear (จุดอยู่บนเส้นตรงเดียวกัน)</strong>";
+                metricsPanel.innerHTML = "<strong style='color:red;'>Vertices are collinear (จุดอยู่บนเส้นตรงเดียวกัน) / Vertices are collinear</strong>";
                 return; 
             }
             
@@ -397,5 +404,5 @@ html_code = """
 </html>
 """
 
-# ใช้ความสูงที่เพียงพอ (1250) และเปิดใช้งาน scrolling
-components.html(html_code, height=1250, scrolling=True)
+# ใช้ความสูงที่เพียงพอ (1300) เพื่อรองรับข้อความสองภาษาที่ยาวขึ้น และเปิดใช้งาน scrolling
+components.html(html_code, height=1300, scrolling=True)
