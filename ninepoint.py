@@ -1,33 +1,5 @@
 import streamlit as st
-import plotly.graph_objects as go
-import numpy as np
-
-# --- MATH HELPER FUNCTIONS ---
-def get_triangle_centers(A, B, C):
-    Ax, Ay = A; Bx, By = B; Cx, Cy = C
-    
-    # 1. Centroid (G) - Average of vertices
-    Gx, Gy = (Ax + Bx + Cx) / 3, (Ay + By + Cy) / 3
-    
-    # 2. Circumcenter (O) - Intersection of perpendicular bisectors
-    D = 2 * (Ax * (By - Cy) + Bx * (Cy - Ay) + Cx * (Ay - By))
-    if D == 0: 
-        return None # Vertices are collinear (not a triangle)
-    
-    Ox = ((Ax**2 + Ay**2)*(By - Cy) + (Bx**2 + By**2)*(Cy - Ay) + (Cx**2 + Cy**2)*(Ay - By)) / D
-    Oy = ((Ax**2 + Ay**2)*(Cx - Bx) + (Bx**2 + By**2)*(Ax - Cx) + (Cx**2 + Cy**2)*(Bx - Ax)) / D
-    
-    # 3. Orthocenter (H) - Using the Euler Line property: H = 3G - 2O
-    Hx, Hy = 3 * Gx - 2 * Ox, 3 * Gy - 2 * Oy
-    
-    # 4. Nine-Point Center (N) - Midpoint of O and H
-    Nx, Ny = (Ox + Hx) / 2, (Oy + Hy) / 2
-    
-    # Radii
-    circumradius = np.sqrt((Ax - Ox)**2 + (Ay - Oy)**2)
-    nine_point_radius = circumradius / 2
-    
-    return (Gx, Gy), (Ox, Oy), (Hx, Hy), (Nx, Ny), circumradius, nine_point_radius
+import streamlit.components.v1 as components
 
 # --- PRESENTATION SLIDES (MARKDOWN) ---
 st.set_page_config(layout="wide", page_title="Euler Line & Nine-Point Circle")
@@ -67,84 +39,158 @@ with col2:
 
 st.write("---")
 st.header("Interactive Demonstration")
-st.write("Adjust the coordinates of the triangle vertices below to see the Euler line and Nine-Point Circle dynamically recalculate.")
+st.write("Click and drag the vertices (A, B, or C) below to see the geometry recalculate smoothly in real-time.")
 
-# --- INTERACTIVE CONTROLS ---
-ctrl_col, plot_col = st.columns([1, 3])
+# --- SMOOTH INTERACTIVE HTML/JS WIDGET ---
+# We inject an HTML5 Canvas to handle the smooth mouse dragging that Plotly cannot do natively.
+html_code = """
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; }
+        .controls { margin-top: 15px; display: flex; gap: 20px; font-size: 16px; }
+        canvas { border: 1px solid #ccc; border-radius: 8px; background-color: #fafafa; cursor: crosshair; margin-top: 10px;}
+        .label { cursor: pointer; user-select: none;}
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <label class="label"><input type="checkbox" id="showCircum" checked> Circumcircle</label>
+        <label class="label"><input type="checkbox" id="showNine" checked> Nine-Point Circle</label>
+        <label class="label"><input type="checkbox" id="showEuler" checked> Euler Line</label>
+    </div>
+    <canvas id="canvas" width="700" height="500"></canvas>
 
-with ctrl_col:
-    st.subheader("Vertex A")
-    ax = st.slider("A (x)", 0, 10, 5)
-    ay = st.slider("A (y)", 0, 10, 9)
-    
-    st.subheader("Vertex B")
-    bx = st.slider("B (x)", 0, 10, 1)
-    by = st.slider("B (y)", 0, 10, 1)
-    
-    st.subheader("Vertex C")
-    cx = st.slider("C (x)", 0, 10, 9)
-    cy = st.slider("C (y)", 0, 10, 2)
-    
-    show_circumcircle = st.checkbox("Show Circumcircle", True)
-    show_ninepoint = st.checkbox("Show Nine-Point Circle", True)
-    show_euler = st.checkbox("Show Euler Line", True)
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Initial Triangle Vertices
+        let pts = [
+            {x: 350, y: 100, label: 'A'},
+            {x: 150, y: 400, label: 'B'},
+            {x: 600, y: 400, label: 'C'}
+        ];
 
-# --- PLOTTING ---
-A, B, C = (ax, ay), (bx, by), (cx, cy)
-centers = get_triangle_centers(A, B, C)
+        // Interaction logic
+        let dragging = null;
 
-with plot_col:
-    if not centers:
-        st.error("Vertices are collinear! Please move them to form a triangle.")
-    else:
-        G, O, H, N, R, Rn = centers
-        
-        fig = go.Figure()
-        
-        # Draw Triangle
-        fig.add_trace(go.Scatter(x=[ax, bx, cx, ax], y=[ay, by, cy, ay], 
-                                 mode='lines+markers+text', text=["A", "B", "C", ""], 
-                                 textposition="top center", name="Triangle",
-                                 line=dict(color='black', width=3), marker=dict(size=8)))
-        
-        # Draw Centers
-        centers_x = [O[0], G[0], H[0], N[0]]
-        centers_y = [O[1], G[1], H[1], N[1]]
-        labels = ["O (Circumcenter)", "G (Centroid)", "H (Orthocenter)", "N (9-Point Center)"]
-        
-        fig.add_trace(go.Scatter(x=centers_x, y=centers_y, mode='markers+text',
-                                 text=["O", "G", "H", "N"], textposition="bottom right",
-                                 marker=dict(color=['blue', 'green', 'red', 'purple'], size=10),
-                                 name="Centers", textfont=dict(size=14, color="black")))
-        
-        # Draw Euler Line
-        if show_euler:
-            fig.add_trace(go.Scatter(x=[O[0], H[0]], y=[O[1], H[1]], mode='lines',
-                                     line=dict(color='orange', width=2, dash='dash'), name="Euler Line"))
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            for (let p of pts) {
+                if (Math.hypot(p.x - mx, p.y - my) < 15) {
+                    dragging = p;
+                    return;
+                }
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!dragging) return;
+            const rect = canvas.getBoundingClientRect();
+            dragging.x = e.clientX - rect.left;
+            dragging.y = e.clientY - rect.top;
+            draw();
+        });
+
+        canvas.addEventListener('mouseup', () => { dragging = null; });
+        canvas.addEventListener('mouseleave', () => { dragging = null; });
+
+        // Checkbox listeners
+        document.getElementById('showCircum').addEventListener('change', draw);
+        document.getElementById('showNine').addEventListener('change', draw);
+        document.getElementById('showEuler').addEventListener('change', draw);
+
+        // Math functions
+        function getCircumcenter(A, B, C) {
+            let D = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
+            if (Math.abs(D) < 0.001) return null; // Collinear
+            let Ux = ((A.x**2 + A.y**2) * (B.y - C.y) + (B.x**2 + B.y**2) * (C.y - A.y) + (C.x**2 + C.y**2) * (A.y - B.y)) / D;
+            let Uy = ((A.x**2 + A.y**2) * (C.x - B.x) + (B.x**2 + B.y**2) * (A.x - C.x) + (C.x**2 + C.y**2) * (B.x - A.x)) / D;
+            return {x: Ux, y: Uy};
+        }
+
+        // Main Drawing Loop
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const A = pts[0], B = pts[1], C = pts[2];
+
+            // Calculate Centers
+            const O = getCircumcenter(A, B, C);
+            if (!O) {
+                ctx.fillStyle = "red";
+                ctx.fillText("Vertices are collinear!", 20, 30);
+                return;
+            }
             
-        # Helper function to generate circle points
-        def make_circle(center_x, center_y, radius):
-            theta = np.linspace(0, 2*np.pi, 100)
-            return center_x + radius*np.cos(theta), center_y + radius*np.sin(theta)
-
-        # Draw Circumcircle
-        if show_circumcircle:
-            cx_pts, cy_pts = make_circle(O[0], O[1], R)
-            fig.add_trace(go.Scatter(x=cx_pts, y=cy_pts, mode='lines', 
-                                     line=dict(color='blue', width=1, dash='dot'), name="Circumcircle"))
+            const G = {x: (A.x + B.x + C.x) / 3, y: (A.y + B.y + C.y) / 3};
+            const H = {x: 3*G.x - 2*O.x, y: 3*G.y - 2*O.y};
+            const N = {x: (O.x + H.x) / 2, y: (O.y + H.y) / 2};
             
-        # Draw Nine-Point Circle
-        if show_ninepoint:
-            nx_pts, ny_pts = make_circle(N[0], N[1], Rn)
-            fig.add_trace(go.Scatter(x=nx_pts, y=ny_pts, mode='lines',
-                                     line=dict(color='purple', width=2), name="Nine-Point Circle"))
+            const R = Math.hypot(O.x - A.x, O.y - A.y);
+            const Rn = R / 2;
 
-        # Formatting
-        fig.update_layout(
-            xaxis=dict(range=[-2, 12], scaleanchor="y", scaleratio=1), 
-            yaxis=dict(range=[-2, 12]),
-            height=600, margin=dict(l=20, r=20, t=20, b=20),
-            legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01)
-        )
-        
-        st.plotly_chart(fig, use_container_width=True)
+            // Get UI states
+            const showCircum = document.getElementById('showCircum').checked;
+            const showNine = document.getElementById('showNine').checked;
+            const showEuler = document.getElementById('showEuler').checked;
+
+            // Draw Triangle
+            ctx.beginPath();
+            ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.lineTo(C.x, C.y); ctx.closePath();
+            ctx.strokeStyle = "black"; ctx.lineWidth = 2; ctx.stroke();
+
+            // Draw Circumcircle
+            if (showCircum) {
+                ctx.beginPath(); ctx.arc(O.x, O.y, R, 0, Math.PI*2);
+                ctx.strokeStyle = "rgba(0, 0, 255, 0.4)"; ctx.setLineDash([5, 5]); ctx.stroke(); ctx.setLineDash([]);
+            }
+
+            // Draw Nine-Point Circle
+            if (showNine) {
+                ctx.beginPath(); ctx.arc(N.x, N.y, Rn, 0, Math.PI*2);
+                ctx.strokeStyle = "rgba(128, 0, 128, 0.8)"; ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1;
+            }
+
+            // Draw Euler Line (extended past O and H slightly)
+            if (showEuler) {
+                ctx.beginPath(); 
+                // Draw a long line through O and H
+                let dx = H.x - O.x, dy = H.y - O.y;
+                ctx.moveTo(O.x - dx*2, O.y - dy*2); ctx.lineTo(H.x + dx*2, H.y + dy*2);
+                ctx.strokeStyle = "rgba(255, 165, 0, 0.6)"; ctx.lineWidth = 3; ctx.stroke(); ctx.lineWidth = 1;
+            }
+
+            // Helper to draw points
+            function drawPoint(p, color, label) {
+                ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
+                ctx.fillStyle = color; ctx.fill();
+                ctx.fillStyle = "black"; ctx.font = "14px Arial";
+                ctx.fillText(label, p.x + 8, p.y - 8);
+            }
+
+            drawPoint(O, "blue", "O");
+            drawPoint(G, "green", "G");
+            drawPoint(H, "red", "H");
+            drawPoint(N, "purple", "N");
+
+            // Draw interactive vertices
+            for (let p of pts) {
+                ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI*2);
+                ctx.fillStyle = dragging === p ? "#ffcc00" : "#333";
+                ctx.fill();
+                ctx.fillStyle = "black"; ctx.font = "bold 16px Arial";
+                ctx.fillText(p.label, p.x - 5, p.y - 12);
+            }
+        }
+
+        draw(); // Initial call
+    </script>
+</body>
+</html>
+"""
+
+components.html(html_code, height=600)
