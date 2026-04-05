@@ -1,5 +1,14 @@
 import streamlit as st
 import streamlit.components.v1 as components
+# โค้ดสำหรับซ่อนเมนู มุมขวาบน และ Footer ของ Streamlit
+hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 # ตั้งค่าหน้าเว็บ / Set page configuration
 st.set_page_config(layout="wide", page_title="Euler Line & 9-Point Circle")
