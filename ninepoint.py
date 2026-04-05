@@ -7,7 +7,7 @@ st.set_page_config(layout="wide", page_title="Euler Line & 9-Point Circle")
 st.title("Interactive Demonstration: Euler Line & Nine-Point Circle")
 st.write("ลากจุดยอด (Drag the vertices) A, B, C เพื่อดูการเปลี่ยนแปลงแบบเรียลไทม์ (to see real-time changes).")
 
-# --- โค้ด HTML/JS สำหรับการโต้ตอบแบบลื่นไหลและแผงแสดงตัวเลข (Metrics) ---
+# --- โค้ด HTML/JS สำหรับการโต้ตอบแบบลื่นไหลและแผงแสดงตัวเลข (Metrics) พร้อม Watermark ---
 html_code = """
 <!DOCTYPE html>
 <html>
@@ -18,7 +18,7 @@ html_code = """
         .control-group { display: flex; flex-direction: column; gap: 8px; min-width: 260px;}
         
         /* สไตล์สำหรับแผงตัวเลข (Metrics Panel) */
-        .metrics-container { display: flex; flex-wrap: wrap; justify-content: space-around; width: 100%; max-width: 900px; margin-bottom: 20px; padding: 15px; background: #e9ecef; border-radius: 8px; border: 1px solid #ced4da; color: #212529;}
+        .metrics-container { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 10px; width: 100%; max-width: 900px; margin-bottom: 20px; padding: 15px; background: #e9ecef; border-radius: 8px; border: 1px solid #ced4da; color: #212529;}
         .metric-col { display: flex; flex-direction: column; gap: 6px; font-size: 15px; font-family: 'Courier New', Courier, monospace;}
         .metric-title { font-family: 'Segoe UI', sans-serif; font-weight: bold; border-bottom: 1px solid #adb5bd; padding-bottom: 4px; margin-bottom: 4px; color: #495057;}
         
@@ -108,6 +108,19 @@ html_code = """
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // --- DRAW WATERMARK ---
+            ctx.save();
+            ctx.globalAlpha = 0.08; // ความโปร่งแสง
+            ctx.font = "bold 40px Arial";
+            ctx.fillStyle = "#333";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(-Math.PI / 8); // เอียงข้อความเล็กน้อย
+            ctx.fillText("by Dr.Che @ Math Mission Thailand", 0, 0);
+            ctx.restore();
+
             const A = pts[0], B = pts[1], C = pts[2];
 
             const O = getCircumcenter(A, B, C);
@@ -123,15 +136,16 @@ html_code = """
             const Rn = R / 2;
 
             // --- อัปเดตตัวเลขระยะทาง (Update Metrics) ---
+            const dHG = Math.hypot(H.x - G.x, H.y - G.y).toFixed(1);
             const dHN = Math.hypot(H.x - N.x, H.y - N.y).toFixed(1);
             const dNG = Math.hypot(N.x - G.x, N.y - G.y).toFixed(1);
             const dGO = Math.hypot(G.x - O.x, G.y - O.y).toFixed(1);
             const dNO = Math.hypot(N.x - O.x, N.y - O.y).toFixed(1);
-            const dHG = Math.hypot(H.x - G.x, H.y - G.y).toFixed(1);
             
             metricsPanel.innerHTML = `
                 <div class="metric-col">
                     <div class="metric-title">ระยะบนเส้นออยเลอร์ (Euler Line)</div>
+                    <span><strong>HG = ${dHG}</strong></span>
                     <span>HN = ${dHN}</span>
                     <span>NG = ${dNG}</span>
                     <span>GO = ${dGO}</span>
@@ -222,6 +236,14 @@ html_code = """
                 ctx.fillStyle = dragging === p ? "#ffcc00" : "#333"; ctx.fill();
                 ctx.fillStyle = "black"; ctx.font = "bold 16px Arial"; ctx.fillText(p.label, p.x - 6, p.y - 13);
             }
+
+            // --- DRAW COPYRIGHT ---
+            ctx.save();
+            ctx.fillStyle = "#888"; // สีเทาอ่อน
+            ctx.font = "12px Arial";
+            ctx.textAlign = "right";
+            ctx.fillText("© 2026 by Dr.Che @ Math Mission Thailand. All rights reserved.", canvas.width - 15, canvas.height - 15);
+            ctx.restore();
         }
         
         draw(); // Initial Render
@@ -230,5 +252,5 @@ html_code = """
 </html>
 """
 
-# แสดงหน้าจอ (ใช้ height เพิ่มขึ้นเล็กน้อยเพื่อรองรับแผงตัวเลข)
+# แสดงหน้าจอ
 components.html(html_code, height=850)
