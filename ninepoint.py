@@ -7,45 +7,55 @@ st.set_page_config(layout="wide", page_title="Euler Line & 9-Point Circle")
 st.title("Interactive Demonstration: Euler Line & Nine-Point Circle")
 st.write("ลากจุดยอด (Drag the vertices) A, B, C เพื่อดูการเปลี่ยนแปลงแบบเรียลไทม์ (to see real-time changes).")
 
-# --- โค้ด HTML/JS สำหรับการโต้ตอบแบบลื่นไหลและแผงแสดงตัวเลข (Metrics) พร้อม Watermark ---
+# --- โค้ด HTML/JS สำหรับการโต้ตอบ + ระบบ Zoom/Pan + Metrics + Watermark ---
 html_code = """
 <!DOCTYPE html>
 <html>
 <head>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; background-color: white;}
-        .controls-container { display: flex; flex-wrap: wrap; gap: 20px; margin: 10px 0 10px 0; justify-content: center; width: 100%; max-width: 900px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;}
-        .control-group { display: flex; flex-direction: column; gap: 8px; min-width: 260px;}
+        .controls-container { display: flex; flex-wrap: wrap; gap: 15px; margin: 10px 0 10px 0; justify-content: center; width: 100%; max-width: 950px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;}
+        .control-group { display: flex; flex-direction: column; gap: 8px; min-width: 220px;}
         
-        /* สไตล์สำหรับแผงตัวเลข (Metrics Panel) */
-        .metrics-container { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 10px; width: 100%; max-width: 900px; margin-bottom: 20px; padding: 15px; background: #e9ecef; border-radius: 8px; border: 1px solid #ced4da; color: #212529;}
+        .metrics-container { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 10px; width: 100%; max-width: 950px; margin-bottom: 15px; padding: 15px; background: #e9ecef; border-radius: 8px; border: 1px solid #ced4da; color: #212529;}
         .metric-col { display: flex; flex-direction: column; gap: 6px; font-size: 15px; font-family: 'Courier New', Courier, monospace;}
         .metric-title { font-family: 'Segoe UI', sans-serif; font-weight: bold; border-bottom: 1px solid #adb5bd; padding-bottom: 4px; margin-bottom: 4px; color: #495057;}
         
         canvas { border: 1px solid #ccc; border-radius: 8px; background-color: #ffffff; cursor: crosshair; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
-        .label { cursor: pointer; user-select: none; font-size: 14px; color: #333;}
-        h4 { margin: 0 0 8px 0; font-size: 15px; color: #111; border-bottom: 2px solid #ddd; padding-bottom: 4px;}
-        input[type="checkbox"] { margin-right: 8px; cursor: pointer;}
+        .label { cursor: pointer; user-select: none; font-size: 13px; color: #333;}
+        h4 { margin: 0 0 8px 0; font-size: 14px; color: #111; border-bottom: 2px solid #ddd; padding-bottom: 4px;}
+        input[type="checkbox"] { margin-right: 6px; cursor: pointer;}
+        
+        .zoom-controls { display: flex; flex-direction: column; background: #e3f2fd; padding: 10px; border-radius: 6px; border: 1px solid #90caf9; }
+        .reset-btn { margin-top: 8px; padding: 4px 8px; border-radius: 4px; border: 1px solid #aaa; background: white; cursor: pointer; font-size: 12px; }
+        .reset-btn:hover { background: #eee; }
     </style>
 </head>
 <body>
     <div class="controls-container">
+        <div class="control-group zoom-controls">
+            <h4>🔍 มุมมอง / View Control</h4>
+            <label class="label">ซูม (Zoom): <input type="range" id="zoomSlider" min="0.1" max="4" step="0.05" value="1" oninput="updateZoomFromSlider()"></label>
+            <span style="font-size: 11px; color: #555;">* เลื่อนล้อเมาส์เพื่อซูมได้ (Scroll to zoom)</span>
+            <span style="font-size: 11px; color: #555;">* คลิกพื้นหลังค้างเพื่อลากหน้าจอ (Drag background to pan)</span>
+            <button class="reset-btn" onclick="resetView()">รีเซ็ตมุมมอง / Reset View</button>
+        </div>
         <div class="control-group">
-            <h4>1. เส้นโครงสร้าง / Structural Lines</h4>
-            <label class="label"><input type="checkbox" id="showAlt" onchange="draw()"> เส้นส่วนสูง / Altitudes (H)</label>
-            <label class="label"><input type="checkbox" id="showMed" onchange="draw()"> เส้นมัธยฐาน / Medians (G)</label>
-            <label class="label"><input type="checkbox" id="showPerp" onchange="draw()"> เส้นแบ่งครึ่งตั้งฉาก / Perp. Bisectors (O)</label>
+            <h4>1. เส้นโครงสร้าง / Lines</h4>
+            <label class="label"><input type="checkbox" id="showAlt" onchange="draw()"> เส้นส่วนสูง / Altitudes</label>
+            <label class="label"><input type="checkbox" id="showMed" onchange="draw()"> เส้นมัธยฐาน / Medians</label>
+            <label class="label"><input type="checkbox" id="showPerp" onchange="draw()"> เส้นแบ่งครึ่งตั้งฉาก / Perp. Bisectors</label>
             <label class="label"><input type="checkbox" id="showEuler" checked onchange="draw()"> <strong>เส้นออยเลอร์ / Euler Line</strong></label>
         </div>
         <div class="control-group">
-            <h4>2. จุดตัด & วงกลม / Centers & Circles</h4>
+            <h4>2. วงกลมหลัก / Circles</h4>
             <label class="label"><input type="checkbox" id="showH" checked onchange="draw()"> จุด H (Orthocenter)</label>
             <label class="label"><input type="checkbox" id="showG" checked onchange="draw()"> จุด G (Centroid)</label>
-            <label class="label"><input type="checkbox" id="showCircum" checked onchange="draw()"> วงกลมล้อมรอบ / Circumcircle (O)</label>
-            <label class="label"><input type="checkbox" id="showNineCirc" checked onchange="draw()"> <strong>วงกลมเก้าจุด / 9-Point Circle (N)</strong></label>
+            <label class="label"><input type="checkbox" id="showCircum" checked onchange="draw()"> วงกลมล้อมรอบ / Circumcircle</label>
+            <label class="label"><input type="checkbox" id="showNineCirc" checked onchange="draw()"> <strong>วงกลมเก้าจุด / 9-Point Circle</strong></label>
         </div>
         <div class="control-group">
-            <h4>3. องค์ประกอบ 9 จุด / The 9 Points</h4>
+            <h4>3. องค์ประกอบ 9 จุด / 9 Points</h4>
             <label class="label"><input type="checkbox" id="showMid" checked onchange="draw()"> จุดกึ่งกลางด้าน / 3 Midpoints</label>
             <label class="label"><input type="checkbox" id="showFeet" checked onchange="draw()"> จุดโคนเส้นส่วนสูง / 3 Altitude Feet</label>
             <label class="label"><input type="checkbox" id="showEulerPts" checked onchange="draw()"> จุดออยเลอร์ / 3 Euler Points</label>
@@ -55,29 +65,104 @@ html_code = """
     <div class="metrics-container" id="metricsPanel">
         </div>
     
-    <canvas id="canvas" width="850" height="550"></canvas>
+    <canvas id="canvas" width="900" height="550"></canvas>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const metricsPanel = document.getElementById('metricsPanel');
         
-        let pts = [{x: 425, y: 120, label: 'A'}, {x: 200, y: 450, label: 'B'}, {x: 650, y: 450, label: 'C'}];
+        let pts = [{x: 450, y: 150, label: 'A'}, {x: 250, y: 400, label: 'B'}, {x: 650, y: 400, label: 'C'}];
+        
+        // สถานะสำหรับการลาก (Drag) และ ซูม (Pan/Zoom)
         let dragging = null;
+        let isPanning = false;
+        let scale = 1.0;
+        let offsetX = 0;
+        let offsetY = 0;
+        let startPanX = 0;
+        let startPanY = 0;
 
+        // แปลงพิกัดหน้าจอ (Screen) เป็นพิกัดโลก (World)
+        function toWorld(sx, sy) {
+            return { x: (sx - offsetX) / scale, y: (sy - offsetY) / scale };
+        }
+
+        // Mouse Events
         canvas.addEventListener('mousedown', (e) => {
             const rect = canvas.getBoundingClientRect();
-            const mx = e.clientX - rect.left; const my = e.clientY - rect.top;
-            for (let p of pts) if (Math.hypot(p.x - mx, p.y - my) < 15) { dragging = p; return; }
+            const sx = e.clientX - rect.left;
+            const sy = e.clientY - rect.top;
+            const w = toWorld(sx, sy);
+            
+            for (let p of pts) {
+                // ขยายพื้นที่การคลิกตามสเกลซูม
+                if (Math.hypot(p.x - w.x, p.y - w.y) < 20 / scale) { 
+                    dragging = p; 
+                    return; 
+                }
+            }
+            // ถ้าไม่ได้คลิกโดนจุด ให้เริ่มการแพนหน้าจอ
+            isPanning = true;
+            startPanX = sx - offsetX;
+            startPanY = sy - offsetY;
         });
-        canvas.addEventListener('mousemove', (e) => {
-            if (!dragging) return;
-            const rect = canvas.getBoundingClientRect();
-            dragging.x = e.clientX - rect.left; dragging.y = e.clientY - rect.top; draw();
-        });
-        canvas.addEventListener('mouseup', () => { dragging = null; });
-        canvas.addEventListener('mouseleave', () => { dragging = null; });
 
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const sx = e.clientX - rect.left;
+            const sy = e.clientY - rect.top;
+            
+            if (dragging) {
+                const w = toWorld(sx, sy);
+                dragging.x = w.x;
+                dragging.y = w.y;
+                draw();
+            } else if (isPanning) {
+                offsetX = sx - startPanX;
+                offsetY = sy - startPanY;
+                draw();
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => { dragging = null; isPanning = false; });
+        canvas.addEventListener('mouseleave', () => { dragging = null; isPanning = false; });
+
+        // Wheel Event สำหรับซูมผ่านลูกกลิ้งเมาส์
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const oldScale = scale;
+            scale += e.deltaY * -0.001;
+            scale = Math.min(Math.max(0.1, scale), 4.0);
+            document.getElementById('zoomSlider').value = scale;
+            
+            // ทำให้ซูมเข้าหาตำแหน่งที่เมาส์ชี้อยู่
+            const rect = canvas.getBoundingClientRect();
+            const sx = e.clientX - rect.left;
+            const sy = e.clientY - rect.top;
+            offsetX = sx - (sx - offsetX) * (scale / oldScale);
+            offsetY = sy - (sy - offsetY) * (scale / oldScale);
+            
+            draw();
+        });
+
+        function updateZoomFromSlider() {
+            const oldScale = scale;
+            scale = parseFloat(document.getElementById('zoomSlider').value);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            offsetX = cx - (cx - offsetX) * (scale / oldScale);
+            offsetY = cy - (cy - offsetY) * (scale / oldScale);
+            draw();
+        }
+
+        function resetView() {
+            scale = 1.0; offsetX = 0; offsetY = 0;
+            document.getElementById('zoomSlider').value = 1;
+            draw();
+        }
+
+        // Math Functions
         function getCircumcenter(A, B, C) {
             let D = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
             if (Math.abs(D) < 0.001) return null;
@@ -91,39 +176,44 @@ html_code = """
             return { x: A.x - k * (C.y - B.y), y: A.y + k * (C.x - B.x) };
         }
 
+        // Helper: Draw Point (ปรับขนาดตามสเกลซูมอัตโนมัติ)
         function drawPoint(p, color, label, size=5) {
-            ctx.beginPath(); ctx.arc(p.x, p.y, size, 0, Math.PI*2);
-            ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = "white"; ctx.lineWidth = 1; ctx.stroke();
+            ctx.beginPath(); ctx.arc(p.x, p.y, size/scale, 0, Math.PI*2);
+            ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = "white"; ctx.lineWidth = 1/scale; ctx.stroke();
             if(label) {
-                ctx.fillStyle = "#111"; ctx.font = "bold 13px Arial"; 
-                ctx.fillText(label, p.x + 8, p.y - 8);
+                ctx.fillStyle = "#111"; 
+                ctx.font = "bold " + Math.max(10, 13/scale) + "px Arial"; 
+                ctx.fillText(label, p.x + 8/scale, p.y - 8/scale);
             }
         }
 
+        // Helper: Draw Line (ปรับขนาดตามสเกลซูมอัตโนมัติ)
         function drawLine(p1, p2, color, dash=[], width=1) {
             ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = color; ctx.lineWidth = width; ctx.setLineDash(dash); 
-            ctx.stroke(); ctx.setLineDash([]); ctx.lineWidth = 1;
+            ctx.strokeStyle = color; ctx.lineWidth = width/scale; 
+            if(dash.length > 0) ctx.setLineDash(dash.map(d => d/scale)); 
+            ctx.stroke(); ctx.setLineDash([]);
         }
 
+        // Main Draw
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // --- DRAW WATERMARK ---
+            // --- DRAW WATERMARK (ตรึงติดหน้าจอ ไม่โดนซูม) ---
             ctx.save();
-            ctx.globalAlpha = 0.08; // ความโปร่งแสง
-            ctx.font = "bold 40px Arial";
+            ctx.globalAlpha = 0.08;
+            ctx.font = "bold 45px Arial";
             ctx.fillStyle = "#333";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate(-Math.PI / 8); // เอียงข้อความเล็กน้อย
+            ctx.rotate(-Math.PI / 8);
             ctx.fillText("by Dr.Che @ Math Mission Thailand", 0, 0);
             ctx.restore();
 
             const A = pts[0], B = pts[1], C = pts[2];
-
             const O = getCircumcenter(A, B, C);
+            
             if (!O) {
                 metricsPanel.innerHTML = "<strong style='color:red;'>Vertices are collinear (จุดอยู่บนเส้นตรงเดียวกัน)</strong>";
                 return; 
@@ -135,7 +225,7 @@ html_code = """
             const R = Math.hypot(O.x - A.x, O.y - A.y);
             const Rn = R / 2;
 
-            // --- อัปเดตตัวเลขระยะทาง (Update Metrics) ---
+            // --- อัปเดตแผง Metrics ---
             const dHG = Math.hypot(H.x - G.x, H.y - G.y).toFixed(1);
             const dHN = Math.hypot(H.x - N.x, H.y - N.y).toFixed(1);
             const dNG = Math.hypot(N.x - G.x, N.y - G.y).toFixed(1);
@@ -164,22 +254,23 @@ html_code = """
                 </div>
             `;
 
-            // 1. Midpoints
+            // เตรียม 9 จุด
             const M_BC = {x: (B.x + C.x)/2, y: (B.y + C.y)/2};
             const M_AC = {x: (A.x + C.x)/2, y: (A.y + C.y)/2};
             const M_AB = {x: (A.x + B.x)/2, y: (A.y + B.y)/2};
-
-            // 2. Altitude Feet
             const F_A = getAltitudeFoot(A, B, C);
             const F_B = getAltitudeFoot(B, A, C);
             const F_C = getAltitudeFoot(C, A, B);
-
-            // 3. Euler Points
             const E_A = {x: (A.x + H.x)/2, y: (A.y + H.y)/2};
             const E_B = {x: (B.x + H.x)/2, y: (B.y + H.y)/2};
             const E_C = {x: (C.x + H.x)/2, y: (C.y + H.y)/2};
 
-            // --- DRAW STRUCTURAL LINES ---
+            // --- เริ่มโหมดซูมและแพน ---
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(scale, scale);
+
+            // วาดเส้นโครงสร้าง
             if (document.getElementById('showMed').checked) {
                 drawLine(A, M_BC, "rgba(0,128,0,0.4)"); drawLine(B, M_AC, "rgba(0,128,0,0.4)"); drawLine(C, M_AB, "rgba(0,128,0,0.4)");
             }
@@ -190,27 +281,27 @@ html_code = """
                 drawLine(M_BC, O, "rgba(0,0,255,0.4)"); drawLine(M_AC, O, "rgba(0,0,255,0.4)"); drawLine(M_AB, O, "rgba(0,0,255,0.4)");
             }
 
-            // --- DRAW TRIANGLE ---
+            // วาดสามเหลี่ยม
             ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.lineTo(C.x, C.y); ctx.closePath();
-            ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1;
+            ctx.strokeStyle = "#000"; ctx.lineWidth = 2/scale; ctx.stroke();
 
-            // --- DRAW CIRCLES ---
+            // วาดวงกลม
             if (document.getElementById('showCircum').checked) {
                 ctx.beginPath(); ctx.arc(O.x, O.y, R, 0, Math.PI*2);
-                ctx.strokeStyle = "rgba(0, 0, 255, 0.3)"; ctx.setLineDash([5, 5]); ctx.stroke(); ctx.setLineDash([]);
+                ctx.strokeStyle = "rgba(0, 0, 255, 0.4)"; ctx.lineWidth = 1.5/scale; ctx.setLineDash([5/scale, 5/scale]); ctx.stroke(); ctx.setLineDash([]);
             }
             if (document.getElementById('showNineCirc').checked) {
                 ctx.beginPath(); ctx.arc(N.x, N.y, Rn, 0, Math.PI*2);
-                ctx.strokeStyle = "rgba(128, 0, 128, 0.8)"; ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1;
+                ctx.strokeStyle = "rgba(128, 0, 128, 0.8)"; ctx.lineWidth = 2.5/scale; ctx.stroke();
             }
 
-            // --- DRAW EULER LINE ---
+            // วาดเส้นออยเลอร์
             if (document.getElementById('showEuler').checked) {
                 let dx = H.x - O.x, dy = H.y - O.y;
-                drawLine({x: O.x - dx, y: O.y - dy}, {x: H.x + dx, y: H.y + dy}, "rgba(255, 165, 0, 0.7)", [], 3);
+                drawLine({x: O.x - dx*1.5, y: O.y - dy*1.5}, {x: H.x + dx*1.5, y: H.y + dy*1.5}, "rgba(255, 165, 0, 0.7)", [], 3);
             }
 
-            // --- DRAW THE 9 POINTS ---
+            // วาด 9 จุด
             if (document.getElementById('showMid').checked) {
                 drawPoint(M_BC, "green", "", 6); drawPoint(M_AC, "green", "", 6); drawPoint(M_AB, "green", "", 6);
             }
@@ -224,22 +315,25 @@ html_code = """
                 drawPoint(E_A, "#00cccc", "", 6); drawPoint(E_B, "#00cccc", "", 6); drawPoint(E_C, "#00cccc", "", 6);
             }
 
-            // --- DRAW CENTERS ---
+            // วาดจุดศูนย์กลาง
             if (document.getElementById('showCircum').checked) drawPoint(O, "blue", "O");
             if (document.getElementById('showG').checked) drawPoint(G, "green", "G");
             if (document.getElementById('showH').checked) drawPoint(H, "red", "H", 6);
             if (document.getElementById('showNineCirc').checked) drawPoint(N, "purple", "N");
 
-            // --- DRAW DRAGGABLE VERTICES ---
+            // วาดจุดยอด (A, B, C)
             for (let p of pts) {
-                ctx.beginPath(); ctx.arc(p.x, p.y, 9, 0, Math.PI*2);
+                ctx.beginPath(); ctx.arc(p.x, p.y, 9/scale, 0, Math.PI*2);
                 ctx.fillStyle = dragging === p ? "#ffcc00" : "#333"; ctx.fill();
-                ctx.fillStyle = "black"; ctx.font = "bold 16px Arial"; ctx.fillText(p.label, p.x - 6, p.y - 13);
+                ctx.fillStyle = "black"; ctx.font = "bold " + Math.max(12, 16/scale) + "px Arial"; 
+                ctx.fillText(p.label, p.x - 6/scale, p.y - 13/scale);
             }
 
-            // --- DRAW COPYRIGHT ---
+            ctx.restore(); // สิ้นสุดโหมดซูม
+
+            // --- DRAW COPYRIGHT (ตรึงติดหน้าจอ) ---
             ctx.save();
-            ctx.fillStyle = "#888"; // สีเทาอ่อน
+            ctx.fillStyle = "#888";
             ctx.font = "12px Arial";
             ctx.textAlign = "right";
             ctx.fillText("© 2026 by Dr.Che @ Math Mission Thailand. All rights reserved.", canvas.width - 15, canvas.height - 15);
@@ -252,5 +346,5 @@ html_code = """
 </html>
 """
 
-# แสดงหน้าจอ
-components.html(html_code, height=850)
+# เพิ่มความสูงของ iframe ใน Streamlit เพื่อรองรับระบบเมนูและ UI ใหม่ทั้งหมด
+components.html(html_code, height=950)
